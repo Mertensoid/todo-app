@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+
+	"todo-app/internal/storage"
 )
 
 func main() {
@@ -19,6 +21,12 @@ func main() {
 		log.Println("Ошибка: не введена команда")
 		os.Exit(1)
 	}
+
+	currentTasks, err := storage.LoadJSON("./test.json")
+	if err != nil {
+		fmt.Printf("Ошибка: %s\n", err)
+	}
+	fmt.Println(currentTasks)
 
 	switch cmd {
 	case "add":
@@ -78,4 +86,5 @@ func main() {
 	default:
 		fmt.Println("Введенной команды не существует")
 	}
+
 }
