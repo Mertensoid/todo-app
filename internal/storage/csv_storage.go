@@ -40,5 +40,15 @@ func LoadCSV(path string) ([]todo.Task, error) {
 }
 
 func SaveCSV(path string, tasks []todo.Task) error {
-
+	file, err := os.Create(path)
+	if err != nil {
+		return errors.New("не удалось создать файл CSV")
+	}
+	writer := csv.NewWriter(file)
+	writer.Write([]string{"ID", "Description", "Done"})
+	for _, task := range tasks {
+		writer.Write([]string{strconv.Itoa(task.ID), task.Description, strconv.FormatBool(task.Done)})
+	}
+	writer.Flush()
+	return nil
 }
