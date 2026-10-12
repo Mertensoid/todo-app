@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"todo-app/internal/storage"
 	"todo-app/internal/todo"
@@ -84,22 +85,54 @@ func main() {
 		}
 	case "load":
 		listCmd := flag.NewFlagSet("load", flag.ExitOnError)
-		load := listCmd.String("load", "", "file name")
+		file := listCmd.String("file", "", "file name")
 		err := listCmd.Parse(args)
 		if err != nil {
 			fmt.Printf("Ошибка: %s\n", err)
 			os.Exit(1)
 		}
-		fmt.Println(*load)
+		if strings.HasSuffix(*file, "csv") {
+			currentTasks, err = storage.LoadCSV(*file)
+			if err != nil {
+				fmt.Printf("Ошибка: %s\n", err)
+				os.Exit(1)
+			}
+		} else if strings.HasSuffix(*file, "json") {
+			currentTasks, err = storage.LoadJSON(*file)
+			if err != nil {
+				fmt.Printf("Ошибка: %s\n", err)
+				os.Exit(1)
+			}
+		} else {
+			fmt.Printf("Ошибка: неверно указан формат")
+			os.Exit(1)
+		}
 	case "export":
 		listCmd := flag.NewFlagSet("export", flag.ExitOnError)
-		export := listCmd.String("export", "", "file name")
+		format := listCmd.String("format", "json", "csv or json")
+		out := listCmd.String("out", "", "file name without format")
 		err := listCmd.Parse(args)
 		if err != nil {
 			fmt.Printf("Ошибка: %s\n", err)
 			os.Exit(1)
 		}
-		fmt.Println(*export)
+		switch *format {
+		case "json":
+			err = storage.SaveJSON(fmt.Sprintf("%s.%s", *out, *format), currentTasks)
+			if err != nil {
+				fmt.Printf("Ошибка: %s\n", err)
+				os.Exit(1)
+			}
+		case "csv":
+			err = storage.SaveCSV(fmt.Sprintf("%s.%s", *out, *format), currentTasks)
+			if err != nil {
+				fmt.Printf("Ошибка: %s\n", err)
+				os.Exit(1)
+			}
+		default:
+			fmt.Printf("Ошибка: неверно указан формат")
+			os.Exit(1)
+		}
 	default:
 		fmt.Println("Ошибка: введенной команды не существует")
 		os.Exit(1)
